@@ -1,5 +1,6 @@
 package com.example.my_reactspring_app.service;
 
+import com.example.my_reactspring_app.dto.UserUpdateDTO;
 import com.example.my_reactspring_app.model.User;
 import com.example.my_reactspring_app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,8 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User getUserByUserId(Integer id) {
+    public User getUserById(Integer id) {
         Optional<User> userOption = userRepository.findById(id);
-
         if (!userOption.isPresent()) {
             return null;
         }
@@ -35,20 +35,40 @@ public class UserService {
         return user;
     }
 
-    public HttpStatus registerNewUser(User userInfo) {
-
-        System.out.println("inside service: " + userInfo);
-
+    public User registerNewUser(User userInfo) {
         if (userRepository.existsByEmail(userInfo.getEmail())) {
-            return HttpStatus.CONFLICT;
+            return null;
         }
 
         // String hashedPassword = passwordEncoder.encode(userInfo.getPassword());
         // userInfo.setPassword(hashedPassword);
         
-        userRepository.save(userInfo);
+        User newUser = userRepository.save(userInfo);
 
-        return HttpStatus.CREATED;
+        return newUser;
+    }
+
+    public boolean updateUser(Integer id, UserUpdateDTO dto) {
+        Optional<User> userOption = userRepository.findById(id);
+        if (userOption.isEmpty()) return false;
+
+        User user = userOption.get();
+
+        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
+        if (dto.getName() != null)  user.setName(dto.getName());
+        if (dto.getAge() != null)   user.setAge(dto.getAge());
+
+        userRepository.save(user);
+        return true;
+    }
+
+    public boolean deleteUser(Integer id) {
+        Optional<User> userOption = userRepository.findById(id);
+        if (userOption.isEmpty()) return false;
+
+        userRepository.delete(userOption.get());
+
+        return true;
     }
 
 }
